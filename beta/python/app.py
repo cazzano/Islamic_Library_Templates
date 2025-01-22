@@ -9,7 +9,6 @@ app = dash.Dash(__name__,
         "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
         "https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css",
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css",
-        dbc.themes.BOOTSTRAP
     ]
 )
 
@@ -22,7 +21,8 @@ books_data = [
         "category": "Holy Book",
         "description": "The central religious text of Islam",
         "icon": "fas fa-book-quran",
-        "icon_color": "text-green-600",
+        "text_color": "text-green-600",
+        "bg_color": "bg-green-100",
         "rating": 5.0
     },
     {
@@ -32,7 +32,8 @@ books_data = [
         "category": "Hadith",
         "description": "Most authentic hadith collection",
         "icon": "fas fa-scroll",
-        "icon_color": "text-blue-600",
+        "text_color": "text-blue-600",
+        "bg_color": "bg-blue-100",
         "rating": 4.9
     },
     {
@@ -42,7 +43,8 @@ books_data = [
         "category": "Islamic Teachings",
         "description": "Gardens of the Righteous",
         "icon": "fas fa-mosque",
-        "icon_color": "text-purple-600",
+        "text_color": "text-red-600",
+        "bg_color": "bg-red-100",
         "rating": 4.7
     }
 ]
@@ -52,102 +54,174 @@ df_books = pd.DataFrame(books_data)
 
 # Navbar Component
 def create_navbar():
-    return dbc.Navbar(
-        dbc.Container([
-            dbc.NavbarBrand([
-                html.I(className="fas fa-library mr-2"),
-                "Islamic Library"
-            ], href="/"),
-            dbc.Nav([
-                dbc.NavItem(dbc.NavLink([
-                    html.I(className="fas fa-home mr-1"),
-                    "Home"
-                ], href="/")),
-                dbc.NavItem(dbc.NavLink([
-                    html.I(className="fas fa-book mr-1"),
-                    "Books"
-                ], href="/books")),
-                dbc.NavItem(dbc.NavLink([
-                    html.I(className="fas fa-tags mr-1"),
-                    "Categories"
-                ], href="/categories"))
-            ], className="ml-auto")
-        ])
+    return html.Div(
+        className="navbar bg-green-500 text-white shadow-lg",
+        children=[
+            html.Div(
+                className="navbar-start",
+                children=[
+                    html.A(
+                        className="btn btn-ghost normal-case text-xl",
+                        children=[
+                            html.I(className="fas fa-library mr-2"),
+                            "Islamic Library"
+                        ]
+                    )
+                ]
+            ),
+            html.Div(
+                className="navbar-center hidden lg:flex",
+                children=[
+                    html.Ul(
+                        className="menu menu-horizontal px-1",
+                        children=[
+                            html.Li(html.A([
+                                html.I(className="fas fa-home mr-1"),
+                                "Home"
+                            ], href="/", className="text-white hover:bg-green-600")),
+                            html.Li(html.A([
+                                html.I(className="fas fa-book mr-1"),
+                                "Books"
+                            ], href="/books", className="text-white hover:bg-green-600")),
+                            html.Li(html.A([
+                                html.I(className="fas fa-tags mr-1"),
+                                "Categories"
+                            ], href="/categories", className="text-white hover:bg-green-600"))
+                        ]
+                    )
+                ]
+            ),
+            html.Div(
+                className="navbar-end",
+                children=[
+                    html.A(
+                        className="btn bg-blue-500 text-white hover:bg-blue-600",
+                        children=[
+                            html.I(className="fas fa-search mr-1"),
+                            "Search"
+                        ]
+                    )
+                ]
+            )
+        ]
     )
 
 # Book Card Component
 def create_book_card(book):
-    return dbc.Card(
-        [
+    return html.Div(
+        className=f"card w-96 {book['bg_color']} shadow-xl",
+        children=[
             html.Div(
-                html.I(className=f"{book['icon']} {book['icon_color']} text-6xl mx-auto my-4"),
-                className="flex justify-center items-center"
+                className="px-10 pt-10",
+                children=[
+                    html.I(
+                        className=f"{book['icon']} text-6xl {book['text_color']}"
+                    )
+                ]
             ),
-            dbc.CardBody([
-                html.H4(book['title'], className="card-title text-center"),
-                html.P(f"Author: {book['author']}", className="card-text text-center"),
-                html.P(f"Category: {book['category']}", className="card-text text-center"),
-                html.Div(
-                    dbc.Badge(
-                        [
-                            html.I(className="fas fa-star mr-1"),
-                            f"Rating: {book['rating']}/5"
-                        ],
-                        color="success",
-                        className="mx-auto"
+            html.Div(
+                className="card-body items-center text-center",
+                children=[
+                    html.H2(
+                        className=f"card-title {book['text_color']}",
+                        children=book['title']
                     ),
-                    className="flex justify-center"
-                )
-            ])
-        ],
-        className="mb-3 shadow-lg text-center"
+                    html.P(f"Author: {book['author']}"),
+                    html.P(f"Category: {book['category']}"),
+                    html.Div(
+                        className="card-actions",
+                        children=[
+                            html.Div(
+                                className="badge bg-red-500 text-white",
+                                children=[
+                                    html.I(className="fas fa-star mr-1"),
+                                    f"Rating: {book['rating']}/5"
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
     )
 
 # App Layout
-app.layout = html.Div([
-    create_navbar(),
-    dbc.Container([
-        html.H1(
-            [
-                html.I(className="fas fa-book-open mr-3"),
-                "Islamic Library Collection"
-            ],
-            className="text-center my-4 flex justify-center items-center"
-        ),
+app.layout = html.Div(
+    className="min-h-screen bg-green-50",
+    children=[
+        create_navbar(),
+        html.Div(
+            className="container mx-auto px-4 py-8",
+            children=[
+                html.Div(
+                    className="text-center mb-8",
+                    children=[
+                        html.H1(
+                            className="text-4xl font-bold text-green-600",
+                            children=[
+                                html.I(className="fas fa-book-open mr-3 text-blue-600"),
+                                "Islamic Library Collection"
+                            ]
+                        )
+                    ]
+                ),
 
-        # Search and Filter Section
-        dbc.Row([
-            dbc.Col([
-                dbc.InputGroup([
-                    dbc.InputGroupText(html.I(className="fas fa-search")),
-                    dbc.Input(
-                        id="search-input",
-                        placeholder="Search books...",
-                        type="text"
-                    )
-                ]),
-            ], width=6),
-            dbc.Col([
-                dbc.InputGroup([
-                    dbc.InputGroupText(html.I(className="fas fa-filter")),
-                    dbc.Select(
-                        id="category-select",
-                        options=[
-                            {"label": "All Categories", "value": "All"},
-                            {"label": "Holy Book", "value": "Holy Book"},
-                            {"label": "Hadith", "value": "Hadith"},
-                            {"label": "Islamic Teachings", "value": "Islamic Teachings"}
-                        ],
-                        value="All"
-                    )
-                ])
-            ], width=6)
-        ], className="mb-4"),
+                # Search and Filter Section
+                html.Div(
+                    className="flex justify-center mb-8",
+                    children=[
+                        html.Div(
+                            className="form-control w-full max-w-xs mr-4",
+                            children=[
+                                html.Label(
+                                    className="label",
+                                    children=html.Span(
+                                        className="label-text text-green-600",
+                                        children="Search Books"
+                                    )
+                                ),
+                                dcc.Input(
+                                    id="search-input",
+                                    type="text",
+                                    placeholder="Search...",
+                                    className="input input-bordered border-green-500 w-full max-w-xs"
+                                )
+                            ]
+                        ),
+                        html.Div(
+                            className="form-control w-full max-w-xs",
+                            children=[
+                                html.Label(
+                                    className="label",
+                                    children=html.Span(
+                                        className="label-text text-blue-600",
+                                        children="Select Category"
+                                    )
+                                ),
+                                dcc.Dropdown(
+                                    id="category-select",
+                                    options=[
+                                        {"label": "All Categories", "value": "All"},
+                                        {"label": "Holy Book", "value": "Holy Book"},
+                                        {"label": "Hadith", "value": "Hadith"},
+                                        {"label": "Islamic Teachings", "value": "Islamic Teachings"}
+                                    ],
+                                    placeholder="Select Category",
+                                    className="w-full max-w-xs"
+                                )
+                            ]
+                        )
+                    ]
+                ),
 
-        # Books Grid
-        html.Div(id="books-grid", className="row")
-    ])
-])
+                # Books Grid
+                html.Div(
+                    id="books-grid",
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center"
+                )
+            ]
+        )
+    ] )
 
 # Callback for Dynamic Book Filtering
 @app.callback(
@@ -171,11 +245,11 @@ def update_book_grid(search_term, category):
 
     # Create book cards
     book_cards = [
-        dbc.Col(create_book_card(book.to_dict()), width=4)
+        create_book_card(book.to_dict())
         for _, book in filtered_books.iterrows()
     ]
 
-    return dbc.Row(book_cards)
+    return book_cards
 
 # Server configuration
 if __name__ == '__main__':
