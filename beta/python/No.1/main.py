@@ -1,9 +1,6 @@
 import os
 from app import app
 
-# Explicitly expose server for gunicorn
-server = app.server
-
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8050))
     app.run_server(
