@@ -1,39 +1,49 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# Multi-stage build for smaller image size
+FROM python:3.9-slim AS builder
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
-
-# Copy the entire project directory into the container
-COPY . /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install dependencies
-RUN pip install --no-cache-dir --upgrade pip
+# Copy only requirements first to leverage Docker cache
+COPY beta/python/No.1/requirements.txt .
 
-# Install project dependencies
-RUN pip install --no-cache-dir \
-    dash \
-    dash-bootstrap-components \
-    pandas \
-    gunicorn
+# Install dependencies
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels \
+    -r requirements.txt
 
-# Alternatively, if you have a requirements.txt file
-RUN pip install --no-cache-dir -r beta/python/No.1/requirements.txt
+# Final stage
+FROM python:3.9-slim
 
-# Expose the port the app runs on
-EXPOSE 8050
+# Set working directory
+WORKDIR /app
+
+# Copy wheels from builder
+COPY --from=builder /app/wheels /wheels
+COPY --from=builder /app/requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache /wheels/*
+
+# Copy project files
+COPY . /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV DASH_DEBUG=False
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PORT=8050
 
-# Command to run the application
-CMD ["python3", "beta/python/No.1/main.py"]
+# Expose port
+EXPOSE 8050
 
-# Optional: If you want to use gunicorn for production
-# CMD ["gunicorn", "--bind", "0.0.0.0:8050", "beta.python.No.1.main:app.server"]
+# Use gunicorn for production
+CMD ["gunicorn", \
+     "--workers", "4", \
+     "--threads", "2", \
+     "--bind", "0.0.0.0:8050", \
+     "beta.python.No.1.main:app.server"]
