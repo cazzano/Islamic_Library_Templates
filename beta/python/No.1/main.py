@@ -1,13 +1,13 @@
-import os  # Add this import
+import os
 from app import app
 
+# Expose the server for gunicorn
+server = app.server
+
 if __name__ == '__main__':
-    # Use environment variable for port, with a default of 8050
     port = int(os.environ.get("PORT", 8050))
-    
-    # Run the server with host set to 0.0.0.0 to make it accessible externally
     app.run_server(
-        debug=True, 
+        debug=False,  # Set to False in production
         host='0.0.0.0', 
         port=port
     )
