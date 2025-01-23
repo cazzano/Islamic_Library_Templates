@@ -1,13 +1,13 @@
 import os
 from app import app
 
-# Expose server for gunicorn
+# Explicitly expose the server for gunicorn
 server = app.server
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8050))
     app.run_server(
-        debug=False,  # Important: set to False in production
+        debug=False,
         host='0.0.0.0', 
         port=port
     )
