@@ -1,12 +1,7 @@
 import os
-import sys
-
-# Explicitly add the app directory to Python path
-sys.path.append('/app')
-
 from app import app
 
-# Explicitly expose the server for gunicorn
+# Expose server for gunicorn
 server = app.server
 
 if __name__ == '__main__':
