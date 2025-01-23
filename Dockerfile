@@ -23,8 +23,8 @@ ENV PORT=8050
 # Expose the port
 EXPOSE 8050
 
-# Modify main.py to expose server
-RUN sed -i '1iimport sys\nsys.path.append(".")' main.py
+# Create a wsgi.py file to properly expose the server
+RUN echo "from app import app as application" > wsgi.py
 
 # Use explicit gunicorn command
-CMD ["gunicorn", "--bind", "0.0.0.0:8050", "--log-level", "debug", "main:app.server"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8050", "--log-level", "debug", "wsgi:application.server"]
