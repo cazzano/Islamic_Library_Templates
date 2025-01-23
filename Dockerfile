@@ -1,49 +1,46 @@
-# Multi-stage build for smaller image size
-FROM python:3.9-slim AS builder
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first to leverage Docker cache
-COPY beta/python/No.1/requirements.txt .
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 
-# Install dependencies
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels \
-    -r requirements.txt
+# Create a directory structure
+RUN mkdir -p /app/beta/python/No.1
 
-# Final stage
-FROM python:3.9-slim
+# Copy requirements and install dependencies
+COPY beta/python/No.1/requirements.txt /app/beta/python/No.1/requirements.txt
+RUN pip install --no-cache-dir -r /app/beta/python/No.1/requirements.txt
+RUN pip install gunicorn
 
-# Set working directory
-WORKDIR /app
-
-# Copy wheels from builder
-COPY --from=builder /app/wheels /wheels
-COPY --from=builder /app/requirements.txt .
-
-# Install dependencies
-RUN pip install --no-cache /wheels/*
-
-# Copy project files
+# Copy the entire project
 COPY . /app
+
+# Create an empty __init__.py files to make directories Python packages
+RUN touch /app/__init__.py
+RUN touch /app/beta/__init__.py
+RUN touch /app/beta/python/__init__.py
+RUN touch /app/beta/python/No.1/__init__.py
+
+# Set Python path
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
 ENV PORT=8050
 
-# Expose port
+# Expose the port the app runs on
 EXPOSE 8050
 
-# Use gunicorn for production
+# Modify the gunicorn command to use the correct import path
 CMD ["gunicorn", \
-     "--workers", "4", \
-     "--threads", "2", \
+     "--chdir", "/app", \
      "--bind", "0.0.0.0:8050", \
-     "beta.python.No.1.main:app.server"]
+     "beta.python.No.1.main:server"]
