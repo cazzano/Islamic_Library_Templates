@@ -5,7 +5,35 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Install system dependencies
+RUN apt-get update && apt-get# Use an official Python runtime
+FROM python:3.9-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the specific project files
+COPY beta/python/No.1/requirements.txt /app/requirements.txt
+COPY beta/python/No.1/main.py /app/main.py
+COPY beta/python/No.1/app.py /app/app.py
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8050
+
+# Expose the port
+EXPOSE 8050
+
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8050", "main:app.server"] install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
