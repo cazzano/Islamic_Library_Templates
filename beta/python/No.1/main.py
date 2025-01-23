@@ -1,7 +1,7 @@
 import os
 from app import app
 
-# Expose server for gunicorn
+# Explicitly expose server for gunicorn
 server = app.server
 
 if __name__ == '__main__':
